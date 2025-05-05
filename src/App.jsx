@@ -24,7 +24,9 @@ import {
   FaInfoCircle,
   FaBaby,
   FaHeart,
-  FaShieldAlt
+  FaShieldAlt,
+  FaSave,
+  FaCheckCircle
 } from "react-icons/fa";
 import { RiTimerFill, RiHandHeartLine } from "react-icons/ri";
 import { MdDirectionsCar, MdHealthAndSafety, MdPregnantWoman } from "react-icons/md";
@@ -68,6 +70,12 @@ const App = () => {
   const [showDriverProfile, setShowDriverProfile] = useState(false);
   const [showMaternalSupport, setShowMaternalSupport] = useState(false);
   const [loadingState, setLoadingState] = useState('idle'); // idle, loading, success, error
+  const [emergencyContact, setEmergencyContact] = useState(() => {
+    const saved = localStorage.getItem('emergencyContact');
+    return saved ? JSON.parse(saved) : { name: '', number: '' };
+  });
+  const [showEmergencyOptions, setShowEmergencyOptions] = useState(false);
+  const [contactSaveMessage, setContactSaveMessage] = useState({ show: false, text: '' });
 
   // Calculate route coordinates
   useEffect(() => {
@@ -190,8 +198,30 @@ const App = () => {
 
   const handlePanicButton = () => {
     setPanicMode(true);
-    // Open phone dialer with emergency number 112
-    window.location.href = "tel:112";
+    // Show emergency options instead of directly dialing
+    setShowEmergencyOptions(true);
+  };
+
+  const callEmergency = (number) => {
+    window.location.href = `tel:${number}`;
+    setShowEmergencyOptions(false);
+  };
+
+  const saveEmergencyContact = (name, number) => {
+    const newContact = { name, number };
+    setEmergencyContact(newContact);
+    localStorage.setItem('emergencyContact', JSON.stringify(newContact));
+    
+    // Show confirmation message
+    setContactSaveMessage({ 
+      show: true, 
+      text: `Emergency contact ${name} saved successfully!` 
+    });
+    
+    // Hide message after 3 seconds
+    setTimeout(() => {
+      setContactSaveMessage({ show: false, text: '' });
+    }, 3000);
   };
 
   const sendMessage = () => {
@@ -286,12 +316,41 @@ const App = () => {
               </div>
             )}
 
-            {/* Panic Button - Moved to bottom left */}
+            {/* Panic Button */}
             {showPanicButton && (
               <button className="panic-button" onClick={handlePanicButton}>
                 <FaExclamationTriangle />
                 <span>SOS</span>
               </button>
+            )}
+
+            {/* Emergency Options Modal */}
+            {showEmergencyOptions && (
+              <div className="modal-overlay" onClick={() => setShowEmergencyOptions(false)}>
+                <div className="emergency-options-modal" onClick={e => e.stopPropagation()}>
+                  <div className="modal-header">
+                    <h2>Emergency Options</h2>
+                    <button className="close-button" onClick={() => setShowEmergencyOptions(false)}>
+                      <FaTimes />
+                    </button>
+                  </div>
+                  <div className="emergency-options-content">
+                    <button className="emergency-call-button" onClick={() => callEmergency('112')}>
+                      <FaPhoneAlt /> Call Emergency Services (112)
+                    </button>
+                    
+                    {emergencyContact.name && emergencyContact.number ? (
+                      <button className="emergency-call-button contact" onClick={() => callEmergency(emergencyContact.number)}>
+                        <FaPhoneAlt /> Call {emergencyContact.name} ({emergencyContact.number})
+                      </button>
+                    ) : (
+                      <div className="no-contact-message">
+                        <FaInfoCircle /> No emergency contact added. Add one in Settings or Maternal Support.
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
             )}
 
             {/* Chat Button */}
@@ -303,34 +362,41 @@ const App = () => {
 
             {/* Chat Interface */}
             {showChat && (
-              <div className="chat-container">
-                <div className="chat-header">
-                  <h3>Chat with Driver</h3>
-                  <button onClick={() => setShowChat(false)}>
-                    <FaTimes />
-                  </button>
-                </div>
-                <div className="chat-messages">
-                  {messages.length === 0 ? (
-                    <div style={{ textAlign: 'center', color: '#8395a7', padding: '20px' }}>
-                      Send a message to your driver
+              <div className="modal-overlay" onClick={() => setShowChat(false)}>
+                <div className="chat-modal" onClick={e => e.stopPropagation()}>
+                  <div className="modal-header">
+                    <h2>Chat with Driver</h2>
+                    <button className="close-button" onClick={() => setShowChat(false)}>
+                      <FaTimes />
+                    </button>
+                  </div>
+                  <div className="chat-container">
+                    <div className="chat-messages">
+                      {messages.length === 0 ? (
+                        <div className="empty-chat-message">
+                          <FaCommentDots />
+                          <p>Send a message to your driver</p>
+                        </div>
+                      ) : (
+                        messages.map((msg, index) => (
+                          <div key={index} className={`message ${msg.sender}`}>
+                            {msg.text}
+                          </div>
+                        ))
+                      )}
                     </div>
-                  ) : (
-                    messages.map((msg, index) => (
-                      <div key={index} className={`message ${msg.sender}`}>
-                        {msg.text}
-                      </div>
-                    ))
-                  )}
-                </div>
-                <div className="chat-input">
-                  <input
-                    type="text"
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    placeholder="Type your message..."
-                  />
-                  <button onClick={sendMessage}>Send</button>
+                    <div className="chat-input">
+                      <input
+                        type="text"
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        placeholder="Type your message..."
+                      />
+                      <button onClick={sendMessage}>
+                        <FaCommentDots /> Send
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
@@ -455,25 +521,47 @@ const App = () => {
           <div className="history-view">
             <h2 className="view-title">Ride History</h2>
             {rideHistory.length === 0 ? (
-              <div className="empty-history">
-                <p>No past rides yet</p>
+              <div className="empty-state">
+                <div className="empty-icon">
+                  <FaHistory />
+                </div>
+                <h3>No Rides Yet</h3>
+                <p>Your maternal care transport history will appear here</p>
               </div>
             ) : (
-              <ul className="history-list">
-                {rideHistory.map((ride, index) => (
-                  <li key={index} className="history-item">
-                    <div className="history-date">{ride.date.toLocaleDateString()}</div>
-                    <div className="history-route">
-                      <div className="history-from">{ride.from}</div>
-                      <div className="history-to">{ride.to}</div>
-                    </div>
-                    <div className="history-details">
-                      <span>{ride.distance} km</span>
-                      <span>{ride.duration} min</span>
-                    </div>
-                  </li>
-                ))}
-              </ul>
+              <div className="history-list-container">
+                <ul className="history-list">
+                  {rideHistory.map((ride, index) => (
+                    <li key={index} className="history-card">
+                      <div className="history-card-header">
+                        <span className="history-date">{ride.date.toLocaleDateString()}</span>
+                        <span className="history-time">{ride.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                      </div>
+                      <div className="history-route">
+                        <div className="route-point">
+                          <div className="route-marker start"></div>
+                          <div className="route-location">{ride.from}</div>
+                        </div>
+                        <div className="route-divider"></div>
+                        <div className="route-point">
+                          <div className="route-marker end"></div>
+                          <div className="route-location">{ride.to}</div>
+                        </div>
+                      </div>
+                      <div className="history-details">
+                        <div className="detail-item">
+                          <FaMapMarkerAlt />
+                          <span>{ride.distance} km</span>
+                        </div>
+                        <div className="detail-item">
+                          <FaClock />
+                          <span>{ride.duration} min</span>
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )}
           </div>
         )}
@@ -481,48 +569,105 @@ const App = () => {
         {activeView === 'settings' && (
           <div className="settings-view">
             <h2 className="view-title">Settings</h2>
-            <div className="settings-group">
-              <h3>Preferences</h3>
-              <div className="setting-item">
-                <label>Theme</label>
-                <select value={darkMode ? "dark" : "light"} onChange={(e) => setDarkMode(e.target.value === "dark")}>
-                  <option value="light">Light Mode</option>
-                  <option value="dark">Dark Mode</option>
-                </select>
+            
+            <div className="settings-cards">
+              <div className="settings-card">
+                <div className="settings-card-header">
+                  <FaSun className="settings-icon" />
+                  <h3>Appearance</h3>
+                </div>
+                <div className="settings-card-content">
+                  <div className="setting-item">
+                    <label>Theme</label>
+                    <div className="toggle-container">
+                      <button 
+                        className={`toggle-button ${!darkMode ? 'active' : ''}`}
+                        onClick={() => setDarkMode(false)}
+                      >
+                        <FaSun /> Light
+                      </button>
+                      <button 
+                        className={`toggle-button ${darkMode ? 'active' : ''}`}
+                        onClick={() => setDarkMode(true)}
+                      >
+                        <FaMoon /> Dark
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div className="setting-item">
+                    <label>Language</label>
+                    <select 
+                      value={language} 
+                      onChange={(e) => setLanguage(e.target.value)}
+                      className="settings-select"
+                    >
+                      <option value="en">English</option>
+                      <option value="pt">Portuguese</option>
+                      <option value="es">Spanish</option>
+                    </select>
+                  </div>
+                </div>
               </div>
               
-              <div className="setting-item">
-                <label>Language</label>
-                <select value={language} onChange={(e) => setLanguage(e.target.value)}>
-                  <option value="en">English</option>
-                  <option value="pt">Portuguese</option>
-                  <option value="es">Spanish</option>
-                </select>
+              <div className="settings-card">
+                <div className="settings-card-header">
+                  <FaBell className="settings-icon" />
+                  <h3>Notifications</h3>
+                </div>
+                <div className="settings-card-content">
+                  <div className="setting-item">
+                    <label>Notification Preferences</label>
+                    <select className="settings-select">
+                      <option>All notifications</option>
+                      <option>Ride updates only</option>
+                      <option>Emergency alerts only</option>
+                      <option>None</option>
+                    </select>
+                  </div>
+                </div>
               </div>
-            </div>
-            
-            <div className="settings-group">
-              <h3>Notifications</h3>
-              <div className="setting-item">
-                <label>Notification Preferences</label>
-                <select>
-                  <option>All notifications</option>
-                  <option>Ride updates only</option>
-                  <option>Emergency alerts only</option>
-                  <option>None</option>
-                </select>
-              </div>
-            </div>
-            
-            <div className="settings-group">
-              <h3>Emergency Contacts</h3>
-              <div className="setting-item">
-                <label>Primary Contact</label>
-                <input type="text" placeholder="Enter name" />
-              </div>
-              <div className="setting-item">
-                <label>Contact Number</label>
-                <input type="tel" placeholder="Enter phone number" />
+              
+              <div className="settings-card">
+                <div className="settings-card-header">
+                  <FaPhoneAlt className="settings-icon" />
+                  <h3>Emergency Contact</h3>
+                </div>
+                <div className="settings-card-content">
+                  <div className="setting-item">
+                    <label>Contact Name</label>
+                    <input 
+                      type="text" 
+                      placeholder="Enter name" 
+                      className="settings-input"
+                      value={emergencyContact.name}
+                      onChange={(e) => setEmergencyContact({...emergencyContact, name: e.target.value})}
+                    />
+                  </div>
+                  <div className="setting-item">
+                    <label>Contact Number</label>
+                    <input 
+                      type="tel" 
+                      placeholder="Enter phone number" 
+                      className="settings-input"
+                      value={emergencyContact.number}
+                      onChange={(e) => setEmergencyContact({...emergencyContact, number: e.target.value})}
+                    />
+                  </div>
+                  {contactSaveMessage.show && (
+                    <div className="save-confirmation-message">
+                      <FaCheckCircle />
+                      <span>{contactSaveMessage.text}</span>
+                    </div>
+                  )}
+                  <button 
+                    className="save-contact-button"
+                    onClick={() => saveEmergencyContact(emergencyContact.name, emergencyContact.number)}
+                    disabled={!emergencyContact.name || !emergencyContact.number}
+                  >
+                    <FaSave /> Save Emergency Contact
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -591,8 +736,41 @@ const App = () => {
                   <li>Know the fastest route to your hospital</li>
                 </ul>
                 
-                <div className="emergency-contact-button">
-                  <FaPhoneAlt /> Add Emergency Contact
+                <div className="settings-card-content emergency-contact-section">
+                  <h4>Emergency Contact</h4>
+                  <div className="setting-item">
+                    <label>Contact Name</label>
+                    <input 
+                      type="text" 
+                      placeholder="Enter name" 
+                      className="settings-input"
+                      value={emergencyContact.name}
+                      onChange={(e) => setEmergencyContact({...emergencyContact, name: e.target.value})}
+                    />
+                  </div>
+                  <div className="setting-item">
+                    <label>Contact Number</label>
+                    <input 
+                      type="tel" 
+                      placeholder="Enter phone number" 
+                      className="settings-input"
+                      value={emergencyContact.number}
+                      onChange={(e) => setEmergencyContact({...emergencyContact, number: e.target.value})}
+                    />
+                  </div>
+                  {contactSaveMessage.show && (
+                    <div className="save-confirmation-message">
+                      <FaCheckCircle />
+                      <span>{contactSaveMessage.text}</span>
+                    </div>
+                  )}
+                  <button 
+                    className="save-contact-button"
+                    onClick={() => saveEmergencyContact(emergencyContact.name, emergencyContact.number)}
+                    disabled={!emergencyContact.name || !emergencyContact.number}
+                  >
+                    <FaSave /> Save Emergency Contact
+                  </button>
                 </div>
               </div>
             </div>

@@ -102,12 +102,13 @@ body {
 .app-main {
   flex: 1;
   position: relative;
-  overflow: hidden;
+  overflow: auto;
+  padding-bottom: 80px;
 }
 
 .map-container {
   width: 100%;
-  height: 100%;
+  height: calc(100% - 80px);
   position: absolute;
   top: 0;
   left: 0;
@@ -241,9 +242,13 @@ body {
   background-color: white;
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
   z-index: 3;
-  position: relative;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
   border-top-left-radius: var(--border-radius-sm);
   border-top-right-radius: var(--border-radius-sm);
+  padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
 }
 
 .app-footer.hidden {
@@ -1415,4 +1420,569 @@ body {
   .emergency-contact-button {
     padding: 12px 16px;
   }
+}
+
+/* Ride History UI Improvements */
+.history-view {
+  padding: 20px;
+  background-color: var(--light-color);
+  min-height: 100%;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 48px;
+  color: var(--primary-color);
+  opacity: 0.5;
+  margin-bottom: 16px;
+}
+
+.empty-state h3 {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--dark-color);
+}
+
+.empty-state p {
+  color: #718093;
+  font-size: 16px;
+}
+
+.history-list-container {
+  margin-top: 20px;
+}
+
+.history-card {
+  background-color: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow-sm);
+  margin-bottom: 16px;
+  padding: 16px;
+  transition: var(--transition);
+}
+
+.history-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--box-shadow);
+}
+
+.history-card-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.history-date {
+  font-weight: 600;
+  color: var(--dark-color);
+}
+
+.history-time {
+  color: #718093;
+}
+
+.history-route {
+  margin-bottom: 20px;
+}
+
+.route-point {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.route-marker {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 12px;
+}
+
+.route-marker.start {
+  background-color: var(--primary-color);
+}
+
+.route-marker.end {
+  background-color: var(--secondary-color);
+}
+
+.route-divider {
+  width: 2px;
+  height: 20px;
+  background-color: #dfe6e9;
+  margin-left: 5px;
+  margin-bottom: 8px;
+}
+
+.route-location {
+  font-size: 14px;
+  color: var(--dark-color);
+}
+
+.history-details {
+  display: flex;
+  justify-content: space-between;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  padding-top: 12px;
+}
+
+.history-details .detail-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #718093;
+  font-size: 14px;
+}
+
+.history-details .detail-item span {
+  font-weight: 600;
+}
+
+/* Settings page improvements */
+.settings-view {
+  padding: 20px;
+  background-color: var(--light-color);
+  min-height: 100%;
+}
+
+.settings-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.settings-card {
+  background-color: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow-sm);
+  overflow: hidden;
+}
+
+.settings-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background-color: var(--primary-light);
+  color: var(--primary-color);
+}
+
+.settings-icon {
+  font-size: 20px;
+}
+
+.settings-card-header h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.settings-card-content {
+  padding: 16px;
+}
+
+.setting-item {
+  margin-bottom: 20px;
+}
+
+.setting-item:last-child {
+  margin-bottom: 0;
+}
+
+.setting-item label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--dark-color);
+}
+
+.settings-select, 
+.settings-input {
+  width: 100%;
+  padding: 12px;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid #dfe6e9;
+  background-color: white;
+  font-size: 14px;
+  color: var(--dark-color);
+  transition: var(--transition);
+}
+
+.settings-select:focus, 
+.settings-input:focus {
+  border-color: var(--primary-color);
+  outline: none;
+  box-shadow: 0 0 0 2px var(--primary-light);
+}
+
+.toggle-container {
+  display: flex;
+  background-color: #f1f2f6;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+}
+
+.toggle-button {
+  flex: 1;
+  background: none;
+  border: none;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #718093;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: var(--transition);
+}
+
+.toggle-button.active {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.save-contact-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, var(--primary-color), #a29bfe);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: var(--box-shadow-sm);
+  margin-top: 12px;
+}
+
+.save-contact-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--box-shadow);
+}
+
+.save-contact-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Emergency Options Modal */
+.emergency-options-modal {
+  width: 100%;
+  max-width: 400px;
+  background-color: white;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  animation: zoomIn 0.3s ease;
+  box-shadow: var(--box-shadow);
+}
+
+.emergency-options-content {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.emergency-call-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px;
+  border-radius: var(--border-radius);
+  border: none;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.emergency-call-button {
+  background-color: var(--danger-color);
+  color: white;
+}
+
+.emergency-call-button.contact {
+  background-color: var(--primary-color);
+}
+
+.emergency-call-button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--box-shadow);
+}
+
+.no-contact-message {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background-color: var(--warning-color);
+  color: #8a5a00;
+  border-radius: var(--border-radius);
+  font-size: 14px;
+}
+
+/* Improved Chat Interface */
+.chat-modal {
+  width: 100%;
+  max-width: 400px;
+  height: 60vh;
+  max-height: 500px;
+  background-color: white;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  animation: zoomIn 0.3s ease;
+  box-shadow: var(--box-shadow);
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.empty-chat-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #8395a7;
+  text-align: center;
+}
+
+.empty-chat-message svg {
+  font-size: 40px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.message {
+  max-width: 80%;
+  padding: 12px 16px;
+  border-radius: 16px;
+  margin-bottom: 12px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.message.user {
+  background-color: var(--primary-color);
+  color: white;
+  margin-left: auto;
+  border-bottom-right-radius: 4px;
+}
+
+.message.driver {
+  background-color: #f1f2f6;
+  color: var(--dark-color);
+  margin-right: auto;
+  border-bottom-left-radius: 4px;
+}
+
+.chat-input {
+  display: flex;
+  padding: 12px;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.chat-input input {
+  flex: 1;
+  padding: 12px;
+  border: 1px solid #dfe6e9;
+  border-radius: var(--border-radius-sm);
+  font-size: 14px;
+  margin-right: 8px;
+}
+
+.chat-input input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.chat-input button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  padding: 0 20px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.chat-input button:hover {
+  background-color: #5f4dd0;
+}
+
+/* Emergency contact section in Maternal Support */
+.emergency-contact-section {
+  background-color: var(--primary-light);
+  border-radius: var(--border-radius);
+  margin-top: 24px;
+}
+
+.emergency-contact-section h4 {
+  color: var(--primary-color);
+  margin-bottom: 16px;
+}
+
+/* Dark mode adjustments */
+.dark-mode .settings-card {
+  background-color: #2d3748;
+}
+
+.dark-mode .settings-card-header {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark-mode .toggle-container {
+  background-color: #4a5568;
+}
+
+.dark-mode .toggle-button {
+  color: #cbd5e0;
+}
+
+.dark-mode .toggle-button.active {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.dark-mode .settings-select,
+.dark-mode .settings-input {
+  background-color: #2d3748;
+  border-color: #4a5568;
+  color: #e2e8f0;
+}
+
+.dark-mode .history-card,
+.dark-mode .chat-modal,
+.dark-mode .emergency-options-modal {
+  background-color: #2d3748;
+  color: #e2e8f0;
+}
+
+.dark-mode .message.driver {
+  background-color: #4a5568;
+  color: #e2e8f0;
+}
+
+.dark-mode .chat-input {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark-mode .chat-input input {
+  background-color: #2d3748;
+  border-color: #4a5568;
+  color: #e2e8f0;
+}
+
+/* Mobile adjustments to ensure UI elements don't get hidden by browser chrome */
+@media (max-width: 480px) {
+  .app-container {
+    height: 100vh;
+    height: calc(100vh - env(safe-area-inset-bottom, 0px));
+  }
+  
+  .app-main {
+    padding-bottom: 100px;
+  }
+  
+  .emergency-type-selector {
+    bottom: 100px;
+  }
+  
+  .panic-button {
+    bottom: 240px;
+  }
+  
+  .chat-button {
+    bottom: 240px;
+  }
+  
+  .settings-card-header {
+    padding: 12px;
+  }
+  
+  .settings-icon {
+    font-size: 18px;
+  }
+  
+  .settings-card-content {
+    padding: 12px;
+  }
+
+  .emergency-options-modal,
+  .chat-modal {
+    max-width: 90%;
+    max-height: 70vh;
+  }
+}
+
+/* Save Confirmation Message */
+.save-confirmation-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background-color: rgba(46, 213, 115, 0.1);
+  color: #2ed573;
+  border-radius: var(--border-radius);
+  margin-bottom: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  animation: fadeInUp 0.3s ease;
+}
+
+.save-confirmation-message svg {
+  font-size: 18px;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Dark mode support */
+.dark-mode .save-confirmation-message {
+  background-color: rgba(46, 213, 115, 0.2);
 }
