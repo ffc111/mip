@@ -66,7 +66,7 @@ const App = () => {
   const [showPanicButton, setShowPanicButton] = useState(true);
   const [panicMode, setPanicMode] = useState(false);
   const [showDriverProfile, setShowDriverProfile] = useState(false);
-  const [showMaternalTips, setShowMaternalTips] = useState(false);
+  const [showMaternalSupport, setShowMaternalSupport] = useState(false);
   const [loadingState, setLoadingState] = useState('idle'); // idle, loading, success, error
 
   // Calculate route coordinates
@@ -190,8 +190,8 @@ const App = () => {
 
   const handlePanicButton = () => {
     setPanicMode(true);
-    // In a real app, this would trigger an emergency response
-    alert('Emergency assistance has been requested. Help is on the way!');
+    // Open phone dialer with emergency number 112
+    window.location.href = "tel:112";
   };
 
   const sendMessage = () => {
@@ -220,12 +220,6 @@ const App = () => {
         <div className="header-right">
           <button className="icon-button" onClick={() => setDarkMode(!darkMode)}>
             {darkMode ? <FaSun /> : <FaMoon />}
-          </button>
-          <button className="icon-button">
-            <FaGlobe />
-          </button>
-          <button className="icon-button">
-            <FaBell />
           </button>
           <button className="icon-button" onClick={() => setShowSidebar(!showSidebar)}>
             <FaUserCircle />
@@ -292,11 +286,18 @@ const App = () => {
               </div>
             )}
 
-            {/* Panic Button */}
+            {/* Panic Button - Moved to bottom left */}
             {showPanicButton && (
               <button className="panic-button" onClick={handlePanicButton}>
                 <FaExclamationTriangle />
                 <span>SOS</span>
+              </button>
+            )}
+
+            {/* Chat Button */}
+            {ambulanceLocation && (
+              <button className="chat-button" onClick={() => setShowChat(!showChat)}>
+                <FaCommentDots />
               </button>
             )}
 
@@ -332,13 +333,6 @@ const App = () => {
                   <button onClick={sendMessage}>Send</button>
                 </div>
               </div>
-            )}
-
-            {/* Chat Button */}
-            {ambulanceLocation && (
-              <button className="chat-button" onClick={() => setShowChat(true)}>
-                <FaCommentDots />
-              </button>
             )}
 
             {/* Driver Profile Modal */}
@@ -422,6 +416,7 @@ const App = () => {
                       <button 
                         className="view-profile-button"
                         onClick={() => setShowDriverProfile(true)}
+                        aria-label="View Driver Profile"
                       >
                         View Profile
                       </button>
@@ -451,68 +446,6 @@ const App = () => {
                 <button className="cancel-ride-button" onClick={cancelRide}>
                   Cancel Ride
                 </button>
-              </div>
-            )}
-
-            {/* Maternal Care Tips Button - Only show when ambulance is en route */}
-            {ambulanceLocation && (
-              <button className="maternal-tips-button" onClick={() => setShowMaternalTips(true)}>
-                <FaInfoCircle />
-                <span>Maternal Care Tips</span>
-              </button>
-            )}
-
-            {/* Maternal Care Tips Modal */}
-            {showMaternalTips && (
-              <div className="modal-overlay" onClick={() => setShowMaternalTips(false)}>
-                <div className="tips-modal" onClick={e => e.stopPropagation()}>
-                  <div className="modal-header">
-                    <h2>Maternal Care Tips</h2>
-                    <button className="close-button" onClick={() => setShowMaternalTips(false)}>
-                      <FaTimes />
-                    </button>
-                  </div>
-                  <div className="tips-content">
-                    <div className="tip-section">
-                      <h3>Comfortable Positions</h3>
-                      <ul>
-                        <li>Kneel on all fours with your back straight</li>
-                        <li>Sit on a birthing ball with your legs wide apart</li>
-                        <li>Lie on your side with a pillow between your knees</li>
-                        <li>Stand and lean forward on a support</li>
-                      </ul>
-                    </div>
-                    
-                    <div className="tip-section">
-                      <h3>Breathing Techniques</h3>
-                      <ul>
-                        <li>Take slow, deep breaths through your nose</li>
-                        <li>Exhale slowly through pursed lips</li>
-                        <li>Focus on relaxing your body with each breath</li>
-                        <li>Practice rhythmic breathing patterns</li>
-                      </ul>
-                    </div>
-
-                    <div className="tip-section">
-                      <h3>Staying Calm</h3>
-                      <ul>
-                        <li>Focus on one contraction at a time</li>
-                        <li>Use visualization techniques</li>
-                        <li>Listen to calming music</li>
-                        <li>Have your support person massage your back</li>
-                      </ul>
-                    </div>
-
-                    <div className="tip-section">
-                      <h3>Emergency Preparedness</h3>
-                      <ul>
-                        <li>Keep your hospital bag ready</li>
-                        <li>Have important documents easily accessible</li>
-                        <li>Keep emergency contacts on speed dial</li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
               </div>
             )}
           </>
@@ -590,6 +523,77 @@ const App = () => {
               <div className="setting-item">
                 <label>Contact Number</label>
                 <input type="tel" placeholder="Enter phone number" />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Maternal Support Page View */}
+        {activeView === 'maternal-support' && (
+          <div className="maternal-support-view">
+            <h2 className="view-title">Maternal Support</h2>
+            
+            <div className="support-card">
+              <div className="card-header">
+                <FaBaby className="header-icon" />
+                <h3>Pregnancy Care</h3>
+              </div>
+              <div className="card-content">
+                <h4>Comfortable Positions</h4>
+                <ul className="support-list">
+                  <li>Kneel on all fours with your back straight</li>
+                  <li>Sit on a birthing ball with your legs wide apart</li>
+                  <li>Lie on your side with a pillow between your knees</li>
+                  <li>Stand and lean forward on a support</li>
+                </ul>
+
+                <h4>Breathing Techniques</h4>
+                <ul className="support-list">
+                  <li>Take slow, deep breaths through your nose</li>
+                  <li>Exhale slowly through pursed lips</li>
+                  <li>Focus on relaxing your body with each breath</li>
+                  <li>Practice rhythmic breathing patterns</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="support-card">
+              <div className="card-header">
+                <FaHeart className="header-icon" />
+                <h3>Mental Wellbeing</h3>
+              </div>
+              <div className="card-content">
+                <h4>Staying Calm</h4>
+                <ul className="support-list">
+                  <li>Focus on one contraction at a time</li>
+                  <li>Use visualization techniques</li>
+                  <li>Listen to calming music</li>
+                  <li>Have your support person massage your back</li>
+                </ul>
+                
+                <p className="support-tip">
+                  <FaInfoCircle /> Regular meditation can help reduce anxiety during pregnancy. Try a few minutes each day.
+                </p>
+              </div>
+            </div>
+
+            <div className="support-card">
+              <div className="card-header">
+                <FaAmbulance className="header-icon" />
+                <h3>Emergency Preparedness</h3>
+              </div>
+              <div className="card-content">
+                <h4>What to Prepare</h4>
+                <ul className="support-list">
+                  <li>Keep your hospital bag ready at all times</li>
+                  <li>Have important documents easily accessible</li>
+                  <li>Keep emergency contacts on speed dial</li>
+                  <li>Know the fastest route to your hospital</li>
+                </ul>
+                
+                <div className="emergency-contact-button">
+                  <FaPhoneAlt /> Add Emergency Contact
+                </div>
               </div>
             </div>
           </div>
@@ -678,16 +682,13 @@ const App = () => {
               >
                 <FaCog /> Settings
               </button>
-              <button className="nav-item">
-                <MdHealthAndSafety /> Health Profile
-              </button>
-              <button className="nav-item">
-                <FaHeart /> Favorites
-              </button>
-              <button className="nav-item">
-                <FaShieldAlt /> Safety Center
-              </button>
-              <button className="nav-item">
+              <button 
+                className={`nav-item ${activeView === 'maternal-support' ? 'active' : ''}`}
+                onClick={() => {
+                  setActiveView('maternal-support');
+                  setShowSidebar(false);
+                }}
+              >
                 <FaBaby /> Maternal Support
               </button>
             </nav>
