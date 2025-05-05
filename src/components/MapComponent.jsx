@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Map, { Marker, Source, Layer } from "react-map-gl";
 import 'mapbox-gl/dist/mapbox-gl.css';
+import { FaMapMarkerAlt, FaHospital, FaAmbulance } from "react-icons/fa";
 
-const MapComponent = () => {
+const MapComponent = ({ currentLocation, hospitalLocation, ambulanceLocation, showRoute }) => {
   // Centered view between both locations
   const [viewState, setViewState] = useState({
     latitude: 38.690,
@@ -10,55 +11,97 @@ const MapComponent = () => {
     zoom: 13,
   });
 
-  // Verified coordinates
-  const novaSchoolCoords = { latitude: 38.679620, longitude: -9.326610 }; // Nova SBE
-  const hospitalCoords = { latitude: 38.701596, longitude: -9.305014 };    // Hospital da Luz
+  // GeoJSON for the route line
+  const [routeLine, setRouteLine] = useState(null);
 
-  // GeoJSON for the dotted line
-  const routeLine = {
-    type: 'Feature',
-    geometry: {
-      type: 'LineString',
-      coordinates: [
-        [hospitalCoords.longitude, hospitalCoords.latitude],
-        [novaSchoolCoords.longitude, novaSchoolCoords.latitude]
-      ]
+  useEffect(() => {
+    if (currentLocation && hospitalLocation) {
+      setRouteLine({
+        type: 'Feature',
+        geometry: {
+          type: 'LineString',
+          coordinates: [
+            [hospitalLocation.longitude, hospitalLocation.latitude],
+            [currentLocation.longitude, currentLocation.latitude]
+          ]
+        }
+      });
     }
-  };
+  }, [currentLocation, hospitalLocation]);
 
   return (
     <Map
       {...viewState}
       onMove={evt => setViewState(evt.viewState)}
-      style={{ width: '100%', height: '400px' }} // Adjust height as needed
-      mapStyle="mapbox://styles/mapbox/streets-v11"
+      style={{ width: '100%', height: '100%' }}
+      mapStyle="mapbox://styles/mapbox/light-v11"
       mapboxAccessToken="pk.eyJ1IjoiZmZjMTExIiwiYSI6ImNtOWE2c292NzAyNjkybHNjbW5mamJvYmMifQ._LmjqsJmZg1m4KWaDDCxbw"
     >
-      {/* Black dotted line */}
-      <Source id="route" type="geojson" data={routeLine}>
-        <Layer
-          type="line"
-          paint={{
-            'line-color': '#000000',
-            'line-width': 3,
-            'line-dasharray': [2, 2] // Dotted pattern
-          }}
-        />
-      </Source>
+      {/* Route line */}
+      {showRoute && routeLine && (
+        <Source id="route" type="geojson" data={routeLine}>
+          <Layer
+            id="route-line"
+            type="line"
+            paint={{
+              'line-color': '#6c5ce7',
+              'line-width': 4,
+              'line-opacity': 0.8,
+              'line-dasharray': [0.5, 1.5]
+            }}
+          />
+          <Layer
+            id="route-glow"
+            type="line"
+            paint={{
+              'line-color': '#6c5ce7',
+              'line-width': 12,
+              'line-opacity': 0.15,
+              'line-blur': 3
+            }}
+            beforeId="route-line"
+          />
+        </Source>
+      )}
 
-      {/* Nova SBE Marker */}
-      <Marker {...novaSchoolCoords}>
-        <div style={{ fontSize: '24px', transform: 'translate(-50%, -100%)' }} title="Nova SBE">
-          📍
-        </div>
-      </Marker>
+      {/* Current Location Marker */}
+      {currentLocation && (
+        <Marker 
+          longitude={currentLocation.longitude} 
+          latitude={currentLocation.latitude}
+          offset={[0, -20]}
+        >
+          <div className="map-marker current" title={currentLocation.name}>
+            <FaMapMarkerAlt />
+          </div>
+        </Marker>
+      )}
 
       {/* Hospital Marker */}
-      <Marker {...hospitalCoords}>
-        <div style={{ fontSize: '24px', transform: 'translate(-50%, -100%)' }} title="Hospital da Luz">
-          🚑
-        </div>
-      </Marker>
+      {hospitalLocation && (
+        <Marker 
+          longitude={hospitalLocation.longitude} 
+          latitude={hospitalLocation.latitude}
+          offset={[0, -20]}
+        >
+          <div className="map-marker hospital" title={hospitalLocation.name}>
+            <FaHospital />
+          </div>
+        </Marker>
+      )}
+
+      {/* Ambulance Marker */}
+      {ambulanceLocation && (
+        <Marker 
+          longitude={ambulanceLocation.longitude} 
+          latitude={ambulanceLocation.latitude}
+          offset={[0, -20]}
+        >
+          <div className="map-marker ambulance" title="Your transport">
+            <FaAmbulance />
+          </div>
+        </Marker>
+      )}
     </Map>
   );
 };

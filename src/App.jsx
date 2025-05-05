@@ -21,10 +21,13 @@ import {
   FaClock,
   FaStar,
   FaTimes,
-  FaInfoCircle
+  FaInfoCircle,
+  FaBaby,
+  FaHeart,
+  FaShieldAlt
 } from "react-icons/fa";
-import { RiTimerFill } from "react-icons/ri";
-import { MdDirectionsCar } from "react-icons/md";
+import { RiTimerFill, RiHandHeartLine } from "react-icons/ri";
+import { MdDirectionsCar, MdHealthAndSafety, MdPregnantWoman } from "react-icons/md";
 
 const App = () => {
   // Locations
@@ -60,10 +63,11 @@ const App = () => {
   const [showChat, setShowChat] = useState(false);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
-  const [showPanicButton, setShowPanicButton] = useState(false);
+  const [showPanicButton, setShowPanicButton] = useState(true);
   const [panicMode, setPanicMode] = useState(false);
   const [showDriverProfile, setShowDriverProfile] = useState(false);
   const [showMaternalTips, setShowMaternalTips] = useState(false);
+  const [loadingState, setLoadingState] = useState('idle'); // idle, loading, success, error
 
   // Calculate route coordinates
   useEffect(() => {
@@ -88,7 +92,7 @@ const App = () => {
     
     // Generate random driver info with more details
     setDriverInfo({
-      name: ["Ana", "Miguel", "Sofia", "Pedro"][Math.floor(Math.random() * 4)],
+      name: ["Ana Silva", "Miguel Oliveira", "Sofia Costa", "Pedro Santos"][Math.floor(Math.random() * 4)],
       rating: (4 + Math.random()).toFixed(1),
       vehicle: "Ambulance #" + Math.floor(1000 + Math.random() * 9000),
       phone: "+351 91" + Math.floor(1000000 + Math.random() * 9000000),
@@ -112,7 +116,7 @@ const App = () => {
     const initialDistance = (5 + Math.random() * 2).toFixed(1);
     const initialTime = Math.floor(10 + Math.random() * 10);
     setDistance(`${initialDistance} km`);
-    setTime(`${initialTime} minutes`);
+    setTime(`${initialTime} min`);
     
     // Calculate arrival time
     const now = new Date();
@@ -147,7 +151,7 @@ const App = () => {
         // Update ETA dynamically
         if (newProgress % 10 === 0) {
           const remainingTime = Math.floor((initialTime * (100 - newProgress)) / 100);
-          setTime(`${remainingTime} minutes`);
+          setTime(`${remainingTime} min`);
         }
         
         return newProgress;
@@ -162,8 +166,14 @@ const App = () => {
   const confirmRequest = () => {
     setShowConfirmation(false);
     setLoading(true);
+    setLoadingState('loading');
     setAmbulanceLocation(hospitalLocation);
-    setTimeout(startAmbulanceJourney, 1500);
+    
+    // Simulate API call with loading state
+    setTimeout(() => {
+      setLoadingState('success');
+      startAmbulanceJourney();
+    }, 2000);
   };
 
   const cancelRequest = () => {
@@ -175,6 +185,7 @@ const App = () => {
     setAmbulanceLocation(null);
     setProgress(0);
     setLoading(false);
+    setLoadingState('idle');
   };
 
   const handlePanicButton = () => {
@@ -204,7 +215,7 @@ const App = () => {
               <FaArrowLeft />
             </button>
           )}
-          <h1 className="app-title">MaternalCare</h1>
+          <h1 className="app-title">UberMaternal</h1>
         </div>
         <div className="header-right">
           <button className="icon-button" onClick={() => setDarkMode(!darkMode)}>
@@ -236,14 +247,18 @@ const App = () => {
             {/* Location Card */}
             <div className="location-card">
               <div className="location-pin">
-                <FaMapMarkerAlt className="pin-icon" />
+                <div className="pin-icon">
+                  <FaMapMarkerAlt />
+                </div>
                 <div className="location-text">
                   <div className="location-title">Current Location</div>
                   <div className="location-address">{currentLocation.name}</div>
                 </div>
               </div>
               <div className="location-pin">
-                <FaHospital className="pin-icon hospital" />
+                <div className="pin-icon hospital">
+                  <FaHospital />
+                </div>
                 <div className="location-text">
                   <div className="location-title">Destination</div>
                   <div className="location-address">{hospitalLocation.name}</div>
@@ -259,10 +274,10 @@ const App = () => {
                   onClick={() => setEmergencyType('maternal')}
                 >
                   <div className="option-icon maternal">
-                    <FaAmbulance />
+                    <MdPregnantWoman />
                   </div>
-                  <div className="option-label">Maternal</div>
-                  <div className="option-description">Specialized maternal care</div>
+                  <div className="option-label">Maternal Care</div>
+                  <div className="option-description">Specialized for expectant mothers</div>
                 </div>
                 <div 
                   className={`emergency-option ${emergencyType === 'general' ? 'active' : ''}`}
@@ -271,7 +286,7 @@ const App = () => {
                   <div className="option-icon general">
                     <MdDirectionsCar />
                   </div>
-                  <div className="option-label">General</div>
+                  <div className="option-label">General Transport</div>
                   <div className="option-description">Standard medical transport</div>
                 </div>
               </div>
@@ -281,7 +296,7 @@ const App = () => {
             {showPanicButton && (
               <button className="panic-button" onClick={handlePanicButton}>
                 <FaExclamationTriangle />
-                <span>Emergency</span>
+                <span>SOS</span>
               </button>
             )}
 
@@ -290,14 +305,22 @@ const App = () => {
               <div className="chat-container">
                 <div className="chat-header">
                   <h3>Chat with Driver</h3>
-                  <button onClick={() => setShowChat(false)}>×</button>
+                  <button onClick={() => setShowChat(false)}>
+                    <FaTimes />
+                  </button>
                 </div>
                 <div className="chat-messages">
-                  {messages.map((msg, index) => (
-                    <div key={index} className={`message ${msg.sender}`}>
-                      {msg.text}
+                  {messages.length === 0 ? (
+                    <div style={{ textAlign: 'center', color: '#8395a7', padding: '20px' }}>
+                      Send a message to your driver
                     </div>
-                  ))}
+                  ) : (
+                    messages.map((msg, index) => (
+                      <div key={index} className={`message ${msg.sender}`}>
+                        {msg.text}
+                      </div>
+                    ))
+                  )}
                 </div>
                 <div className="chat-input">
                   <input
@@ -384,7 +407,7 @@ const App = () => {
               </div>
             )}
 
-            {/* Update the driver info section to include the profile button */}
+            {/* Ride Status Container */}
             {ambulanceLocation && (
               <div className="ride-status-container">
                 <div className="driver-info">
@@ -420,7 +443,7 @@ const App = () => {
                     <span>{distance}</span>
                   </div>
                   <div className="status-item">
-                    <span>Estimated Arrival</span>
+                    <span>Arrival</span>
                     <span>{estimatedArrival}</span>
                   </div>
                 </div>
@@ -500,7 +523,7 @@ const App = () => {
             <h2 className="view-title">Ride History</h2>
             {rideHistory.length === 0 ? (
               <div className="empty-history">
-                <p>No past rides</p>
+                <p>No past rides yet</p>
               </div>
             ) : (
               <ul className="history-list">
@@ -526,14 +549,47 @@ const App = () => {
           <div className="settings-view">
             <h2 className="view-title">Settings</h2>
             <div className="settings-group">
-              <h3>Account</h3>
+              <h3>Preferences</h3>
+              <div className="setting-item">
+                <label>Theme</label>
+                <select value={darkMode ? "dark" : "light"} onChange={(e) => setDarkMode(e.target.value === "dark")}>
+                  <option value="light">Light Mode</option>
+                  <option value="dark">Dark Mode</option>
+                </select>
+              </div>
+              
+              <div className="setting-item">
+                <label>Language</label>
+                <select value={language} onChange={(e) => setLanguage(e.target.value)}>
+                  <option value="en">English</option>
+                  <option value="pt">Portuguese</option>
+                  <option value="es">Spanish</option>
+                </select>
+              </div>
+            </div>
+            
+            <div className="settings-group">
+              <h3>Notifications</h3>
               <div className="setting-item">
                 <label>Notification Preferences</label>
                 <select>
                   <option>All notifications</option>
                   <option>Ride updates only</option>
+                  <option>Emergency alerts only</option>
                   <option>None</option>
                 </select>
+              </div>
+            </div>
+            
+            <div className="settings-group">
+              <h3>Emergency Contacts</h3>
+              <div className="setting-item">
+                <label>Primary Contact</label>
+                <input type="text" placeholder="Enter name" />
+              </div>
+              <div className="setting-item">
+                <label>Contact Number</label>
+                <input type="tel" placeholder="Enter phone number" />
               </div>
             </div>
           </div>
@@ -546,8 +602,8 @@ const App = () => {
           <>
             {showConfirmation ? (
               <div className="confirmation-dialog">
-                <h3>Confirm Emergency Request</h3>
-                <p>You are about to request emergency transport to {hospitalLocation.name}</p>
+                <h3>Confirm Transport Request</h3>
+                <p>You are about to request maternal care transport to {hospitalLocation.name}</p>
                 <div className="confirmation-buttons">
                   <button className="cancel-button" onClick={cancelRequest}>
                     Cancel
@@ -559,12 +615,21 @@ const App = () => {
               </div>
             ) : (
               <button
-                className={`request-button ${loading ? 'loading' : ''}`}
+                className={`request-button ${loadingState === 'loading' ? 'loading' : ''}`}
                 onClick={handleRequest}
-                disabled={loading}
+                disabled={loadingState === 'loading'}
               >
-                <FaPhoneAlt className="button-icon" />
-                {loading ? 'Requesting...' : 'Request Emergency Transport'}
+                {loadingState === 'loading' ? (
+                  <>
+                    <div className="loading-spinner"></div>
+                    Connecting...
+                  </>
+                ) : (
+                  <>
+                    <RiHandHeartLine className="button-icon" />
+                    Request Maternal Care Transport
+                  </>
+                )}
               </button>
             )}
           </>
@@ -580,8 +645,8 @@ const App = () => {
                 <FaUserCircle />
               </div>
               <div className="user-info">
-                <div className="user-name">User Name</div>
-                <div className="user-email">user@example.com</div>
+                <div className="user-name">Sarah Johnson</div>
+                <div className="user-email">sarah@example.com</div>
               </div>
             </div>
             
@@ -612,6 +677,18 @@ const App = () => {
                 }}
               >
                 <FaCog /> Settings
+              </button>
+              <button className="nav-item">
+                <MdHealthAndSafety /> Health Profile
+              </button>
+              <button className="nav-item">
+                <FaHeart /> Favorites
+              </button>
+              <button className="nav-item">
+                <FaShieldAlt /> Safety Center
+              </button>
+              <button className="nav-item">
+                <FaBaby /> Maternal Support
               </button>
             </nav>
           </div>
